@@ -12,7 +12,7 @@ fn main() {
         snake: Snake::new(vec![[0., 0.]]),
         food: Food::new([300., 300.]),
         instant: Instant::now(),
-        highest_score: 0,
+        score: 0,
     };
 
     let mut c = conf::Conf::new();
@@ -36,7 +36,7 @@ struct State {
     snake: Snake,
     food: Food,
     instant: std::time::Instant,
-    highest_score: i32,
+    score: i32,
 }
 
 impl ggez::event::EventHandler<GameError> for State {
@@ -50,18 +50,13 @@ impl ggez::event::EventHandler<GameError> for State {
 
             //移动头
             match self.snake.direction {
-                Direction::UP => {
-                    self.snake.positions[0][1] -= 50.;
-                }
-                Direction::DOWN => {
-                    self.snake.positions[0][1] += 50.;
-                }
-                Direction::LEFT => {
-                    self.snake.positions[0][0] -= 50.;
-                }
-                Direction::RIGHT => {
-                    self.snake.positions[0][0] += 50.;
-                }
+                Direction::UP => self.snake.positions[0][1] -= 50.,
+
+                Direction::DOWN => self.snake.positions[0][1] += 50.,
+
+                Direction::LEFT => self.snake.positions[0][0] -= 50.,
+
+                Direction::RIGHT => self.snake.positions[0][0] += 50.,
             }
             let new_head_coordinates = self.snake.positions[0].clone();
 
@@ -83,7 +78,7 @@ impl ggez::event::EventHandler<GameError> for State {
         if self.snake.positions[0][0] == self.food.coordinate[0]
             && self.snake.positions[0][1] == self.food.coordinate[1]
         {
-            self.highest_score += 1;
+            self.score += 1;
             self.snake.positions.push(self.snake.prev_tail_coordinates);
 
             let mut rng = thread_rng();
@@ -105,7 +100,7 @@ impl ggez::event::EventHandler<GameError> for State {
         if is_gameover {
             self.snake.positions = vec![[0., 0.]];
             self.snake.direction = Direction::DOWN;
-            self.highest_score = 0;
+            self.score = 0;
             is_gameover = false;
         }
 
@@ -115,7 +110,7 @@ impl ggez::event::EventHandler<GameError> for State {
         let mut canvas = Canvas::from_frame(ctx, graphics::Color::from([0., 0., 0., 1.]));
         self.snake.draw(&mut canvas, ctx)?;
         self.food.draw(&mut canvas)?;
-        let score_txt = graphics::Text::new(format!("highest score: {}", self.highest_score));
+        let score_txt = graphics::Text::new(format!("Score: {}", self.score));
         canvas.draw(
             &score_txt,
             DrawParam::default()
@@ -132,18 +127,14 @@ impl ggez::event::EventHandler<GameError> for State {
         _repeated: bool,
     ) -> Result<(), GameError> {
         match input.keycode {
-            Some(input::keyboard::KeyCode::Right) => {
-                self.snake.direction = Direction::RIGHT;
-            }
-            Some(input::keyboard::KeyCode::Left) => {
-                self.snake.direction = Direction::LEFT;
-            }
-            Some(input::keyboard::KeyCode::Up) => {
-                self.snake.direction = Direction::UP;
-            }
-            Some(input::keyboard::KeyCode::Down) => {
-                self.snake.direction = Direction::DOWN;
-            }
+            Some(input::keyboard::KeyCode::Right) => self.snake.direction = Direction::RIGHT,
+
+            Some(input::keyboard::KeyCode::Left) => self.snake.direction = Direction::LEFT,
+
+            Some(input::keyboard::KeyCode::Up) => self.snake.direction = Direction::UP,
+
+            Some(input::keyboard::KeyCode::Down) => self.snake.direction = Direction::DOWN,
+
             _ => {}
         };
 
@@ -194,7 +185,7 @@ impl Snake {
             head_point,
             25.,
             1.,
-            graphics::Color::BLUE,
+            graphics::Color::GREEN,
         )?;
         head.draw(canvas, DrawParam::default());
         for body in self.positions.iter().skip(1) {
